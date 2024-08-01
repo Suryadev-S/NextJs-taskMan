@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@layer base{
+    body{
+        @apply bg-slate-900;
+    }
+    ul#boardList{
+        @apply grid grid-cols-2 gap-1
+    }
+    #nav{
+        @apply py-4 flex items-center justify-between;
+    }
+}
+
+@layer utilities{
+    #card,#dialog{
+        @apply bg-slate-700 border-none;
+    }
+    #dialog,#boardName{
+        @apply text-white;
+    }
+    #boardName{
+        @apply text-2xl;
+    }
+    #cardTitle{
+        @apply text-teal-300;
+    }
+    #cardDesc{
+        @apply text-zinc-400;
+    }
+}
