@@ -28,6 +28,9 @@
     #cardTitle{
         @apply text-teal-300;
     }
+    #cardTitleDone{
+        color: rgba(94, 234, 212,.2);
+    }
     #cardDesc{
         @apply text-zinc-400;
     }

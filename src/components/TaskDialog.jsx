@@ -3,11 +3,11 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from '@/components/ui/button';
 import { Input } from "@/components/ui/input";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import AppContext from "@/context/appContext";
 
-const TaskDialog = ({ activeBoardId }) => {
-    const {tasks, setTasks} = useContext(AppContext);
+const TaskDialog = ({ activeBoardId, taskToEdit }) => {
+    const { tasks, setTasks } = useContext(AppContext);
     const [form, setForm] = useState({
         title: '',
         description: '',
@@ -17,6 +17,31 @@ const TaskDialog = ({ activeBoardId }) => {
         status: "todo",
         isDone: false,
     })
+
+    useEffect(() => {
+        if (taskToEdit) {
+            setForm({
+                title: taskToEdit.title || '',
+                description: taskToEdit.description || '',
+                subTasks: taskToEdit.subTasks || [],
+                subTasksCount: taskToEdit.subTasksCount || 0,
+                subTasksDone: taskToEdit.subTasksDone || 0,
+                status: taskToEdit.status || "todo",
+                isDone: taskToEdit.isDone || false,
+            });
+        } else {
+            setForm({
+                title: '',
+                description: '',
+                subTasks: [],
+                subTasksCount: 0,
+                subTasksDone: 0,
+                status: "todo",
+                isDone: false,
+            });
+        }
+    }, [taskToEdit]);
+
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value })
     }
@@ -42,17 +67,24 @@ const TaskDialog = ({ activeBoardId }) => {
             alert("please give either a title or description");
             return;
         }
-        const newTask = {
+        const updatedTask = {
             ...form,
             subTasksCount: form.subTasks.length,
-            taskId: Date.now().toString(),
             boardId: activeBoardId,
+        };
+
+        if (taskToEdit) {
+            updatedTask.taskId = taskToEdit.taskId; // Keep original taskId
+            const updatedTasks = tasks.map(task => task.taskId === taskToEdit.taskId ? updatedTask : task);
+            setTasks(updatedTasks);
+            localStorage.setItem("tasks", JSON.stringify(updatedTasks));
+        } else {
+            // If creating a new task
+            updatedTask.taskId = Date.now().toString();
+            const updatedTasks = [...tasks, updatedTask];
+            setTasks(updatedTasks);
+            localStorage.setItem("tasks", JSON.stringify(updatedTasks));
         }
-        const updatedTasks = [...tasks, newTask];
-        //updateUI
-        setTasks(updatedTasks);
-        //updateStorage
-        localStorage.setItem("tasks", JSON.stringify(updatedTasks));
         setForm({
             title: '',
             description: '',
@@ -66,13 +98,13 @@ const TaskDialog = ({ activeBoardId }) => {
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <Button variant="outline">Add Task</Button>
+                <Button variant="outline">{taskToEdit ? "Edit Task" : "Add Task"}</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Add Task</DialogTitle>
+                    <DialogTitle>{taskToEdit ? "Edit Task" : "Add Task"}</DialogTitle>
                     <DialogDescription>
-                        Fill in to make your task
+                        {taskToEdit ? "Edit your task details" : "Fill in to make your task"}
                     </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4">
@@ -102,7 +134,7 @@ const TaskDialog = ({ activeBoardId }) => {
                         <Button size={"sm"} onClick={handleAddSub}>Add subs</Button>
                     </div>
                     <div>
-                        <Button onClick={handleSubmit}>Submit</Button>
+                        <Button onClick={handleSubmit}>{taskToEdit ? "Update Task" : "Submit"}</Button>
                     </div>
                 </div>
             </DialogContent>
